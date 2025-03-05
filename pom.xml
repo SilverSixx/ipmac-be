@@ -17,9 +17,8 @@
 
     <modules>
         <module>common-service</module>
-        <module>user-service</module>
-        <module>course-service</module>
         <module>training-service</module>
+        <module>admin-service</module>
     </modules>
 
     <properties>
@@ -28,7 +27,12 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <spring-boot.version>3.4.3</spring-boot.version>
+
         <lombok.version>1.18.36</lombok.version>
+        <keycloak.version>25.0.3</keycloak.version>
+
+        <service.version>0.0.1-SNAPSHOT</service.version>
     </properties>
 
     <dependencyManagement>
@@ -36,7 +40,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.4.3</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -45,20 +49,43 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
             <version>${lombok.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>nexus-releases</id>
+            <url>file:///home/dat_pl/.m2/repository</url>
+        </repository>
+
+        <repository>
+            <id>nexus-snapshots</id>
+            <url>file:///home/dat_pl/.m2/snapshots</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <url>file:///home/dat_pl/.m2/repository</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <url>file:///home/dat_pl/.m2/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>

@@ -1,0 +1,40 @@
+spring:
+  profiles:
+    active: dev
+  main:
+    web-application-type: reactive
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8443/realms/ipmac
+          jwk-set-uri: http://localhost:8443/realms/ipmac/protocol/openid-connect/certs
+  cloud:
+    gateway:
+      routes:
+        - id: training-service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/training/**
+        - id: admin-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/admin/**
+server:
+  port: 8000
+
+oauth2:
+  auth-server-url: http://localhost:8443
+  realm: ipmac
+  admin-client:
+    client-id: admin-cli
+    client-secret: 855w56kgeLtU8EyGZ4aOqDItwsTUSjeQ
+  clients:
+    - ipmac-fe
+
+cors:
+  allowed-origins: http://localhost:5173
+
+logging:
+  level:
+    org.springframework.web: trace
