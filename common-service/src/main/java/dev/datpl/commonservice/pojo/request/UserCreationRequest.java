@@ -1,5 +1,6 @@
-package dev.datpl.commonservice.pojo.dto;
+package dev.datpl.commonservice.pojo.request;
 
+import dev.datpl.commonservice.validator.ValidRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -7,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -15,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserRepresentationDto {
+public class UserCreationRequest {
     @NotBlank(message = "Username is required")
     String username;
 
@@ -32,28 +34,27 @@ public class UserRepresentationDto {
     @NotBlank(message = "Password is required")
     String password;
 
-    @NotBlank(message = "Role is required")
+    @ValidRole
     String role;
 
-    public static UserRepresentation toUserRepresentation(UserRepresentationDto userRepresentationDto) {
+    public static UserRepresentation toUserRepresentation(UserCreationRequest userCreationRequest) {
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(userRepresentationDto.getUsername());
-        user.setEmail(userRepresentationDto.getEmail());
-        user.setFirstName(userRepresentationDto.getFirstName());
-        user.setLastName(userRepresentationDto.getLastName());
+        user.setUsername(userCreationRequest.getUsername());
+        user.setEmail(userCreationRequest.getEmail());
+        user.setFirstName(userCreationRequest.getFirstName());
+        user.setLastName(userCreationRequest.getLastName());
         user.setEnabled(true);
-        user.setRealmRoles(Collections.singletonList(userRepresentationDto.getRole()));
-        user.setEmailVerified(true);
+        user.setRealmRoles(Collections.singletonList(userCreationRequest.getRole()));
+        user.setEmailVerified(false);
 
+        List<CredentialRepresentation> credentials = new ArrayList<>();
         CredentialRepresentation credential = new CredentialRepresentation();
-        credential.setValue(userRepresentationDto.getPassword());
+        credential.setValue(userCreationRequest.getPassword());
         credential.setType(CredentialRepresentation.PASSWORD);
         credential.setTemporary(false);
-
-        List<CredentialRepresentation> credentials = user.getCredentials();
         credentials.add(credential);
-
         user.setCredentials(credentials);
+
         return user;
     }
 }

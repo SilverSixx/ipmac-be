@@ -1,6 +1,6 @@
 package dev.datpl.commonservice.controller;
 
-import dev.datpl.commonservice.pojo.dto.UserRepresentationDto;
+import dev.datpl.commonservice.pojo.request.UserCreationRequest;
 import dev.datpl.commonservice.pojo.response.UserResponse;
 import dev.datpl.commonservice.service.IOauth2Service;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class CommonController {
     }
 
     @PostMapping("/users")
-    public Mono<ResponseEntity<UserResponse>> createUser(@Validated @RequestBody UserRepresentationDto userRepresentation) {
+    public Mono<ResponseEntity<UserResponse>> createUser(@Validated @RequestBody UserCreationRequest userRepresentation) {
         return Mono.just(ResponseEntity.ok(oauth2Service.createUser(userRepresentation)));
     }
 

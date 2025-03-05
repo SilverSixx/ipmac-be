@@ -4,23 +4,28 @@ import dev.datpl.commonservice.config.Oauth2ConfigProperties;
 import dev.datpl.commonservice.exception.UserCreationException;
 import dev.datpl.commonservice.exception.UserDeletionException;
 import dev.datpl.commonservice.exception.UserRetrievalException;
-import dev.datpl.commonservice.pojo.dto.UserRepresentationDto;
+import dev.datpl.commonservice.pojo.request.UserCreationRequest;
 import dev.datpl.commonservice.pojo.response.UserResponse;
 import dev.datpl.commonservice.service.IOauth2Service;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -42,12 +47,11 @@ public class KeycloakService implements IOauth2Service {
     }
 
     @Override
-    public UserResponse createUser(UserRepresentationDto userRepresentation) throws UserCreationException {
+    public UserResponse createUser(UserCreationRequest userRepresentation) throws UserCreationException {
         try {
-            UserRepresentation user = UserRepresentationDto.toUserRepresentation(userRepresentation);
+            UserRepresentation user = UserCreationRequest.toUserRepresentation(userRepresentation);
             UsersResource userResource = getRealmResource().users();
-
-            Response response = userResource.create(UserRepresentationDto.toUserRepresentation(userRepresentation));
+            Response response = userResource.create(user);
             if (response.getStatus() != 201) {
                 log.error("User creation failed. Status code: {}", response.getStatus());
                 String errorMessage = response.readEntity(String.class);
@@ -57,10 +61,33 @@ public class KeycloakService implements IOauth2Service {
                         response.getStatus()
                 );
             }
-            log.info("User created successfully: {}", user.getUsername());
-            return UserResponse.fromUserRepresentation(user);
-        } catch (UserCreationException e) {
-            throw e;
+
+            String createdUserId = extractUserIdFromResponse(response);
+            List<String> assignedGroups = new ArrayList<>();
+            if (userRepresentation.getRole() != null) {
+                String groupName = userRepresentation.getRole();
+                GroupsResource groupsResource = getRealmResource().groups();
+                List<GroupRepresentation> groups = groupsResource.groups();
+                GroupRepresentation targetGroup = groups.stream()
+                        .filter(group -> group.getName().equals(groupName))
+                        .findFirst()
+                        .orElseThrow(() -> new UserCreationException(
+                                "Group not found: " + groupName,
+                                404
+                        ));
+                UserResource userRes = userResource.get(createdUserId);
+                userRes.joinGroup(targetGroup.getId());
+                assignedGroups.add(groupName);
+            }
+
+            log.info("User created and added to group successfully: {}", user.getUsername());
+            return UserResponse.fromUserRepresentation(user, assignedGroups);
+        } catch (WebApplicationException e) {
+            log.error("Keycloak API error during user creation", e);
+            throw new UserCreationException(
+                    "Error interacting with Keycloak",
+                    e.getResponse().getStatus()
+            );
         } catch (Exception e) {
             log.error("Unexpected error during user creation", e);
             throw new UserCreationException(
@@ -70,11 +97,19 @@ public class KeycloakService implements IOauth2Service {
         }
     }
 
+    private String extractUserIdFromResponse(Response response) {
+        URI location = response.getLocation();
+        if (location != null) {
+            String path = location.getPath();
+            return path.substring(path.lastIndexOf('/') + 1);
+        }
+        throw new UserCreationException("Could not extract user ID from response", 500);
+    }
+
     @Override
     public List<UserResponse> getAllUsers() {
         try {
             List<UserRepresentation> users = getRealmResource().users().list();
-            // Check if users list is null or empty
             if (users == null || users.isEmpty()) {
                 log.warn("No users found in Keycloak realm");
                 return Collections.emptyList();
