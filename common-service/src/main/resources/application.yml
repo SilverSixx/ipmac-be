@@ -20,6 +20,7 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/api/admin/**
+
 server:
   port: 8000
 
@@ -31,6 +32,10 @@ oauth2:
     client-secret: 855w56kgeLtU8EyGZ4aOqDItwsTUSjeQ
   clients:
     - ipmac-fe
+
+kafka:
+  topics:
+    - user-creation
 
 cors:
   allowed-origins: http://localhost:5173

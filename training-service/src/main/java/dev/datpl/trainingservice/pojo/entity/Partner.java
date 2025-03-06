@@ -4,28 +4,22 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Table(name = "partners")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Partner {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "partner_id")
-    Long id;
-
-    String name;
-    String email;
+public class Partner extends User {
     String phone;
     String address;
-    String description;
 
     // 1 partner can have many courses, 1 course can belong to many partners
     @ManyToMany(mappedBy = "partners")

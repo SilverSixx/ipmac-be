@@ -18,6 +18,11 @@ cors:
   allowed-origins:
     - "http://localhost:8000"
 
+kafka:
+  group-id: training-service
+  topics:
+    user-creation: user-creation
+
 logging:
   level:
     org.springframework.web: trace

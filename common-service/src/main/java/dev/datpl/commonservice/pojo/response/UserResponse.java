@@ -2,12 +2,10 @@ package dev.datpl.commonservice.pojo.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.List;
 
-@Slf4j
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor

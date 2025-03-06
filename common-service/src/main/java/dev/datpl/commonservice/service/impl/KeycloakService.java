@@ -1,9 +1,11 @@
 package dev.datpl.commonservice.service.impl;
 
+import dev.datpl.commonservice.config.KafkaConfigProperties;
 import dev.datpl.commonservice.config.Oauth2ConfigProperties;
 import dev.datpl.commonservice.exception.UserCreationException;
 import dev.datpl.commonservice.exception.UserDeletionException;
 import dev.datpl.commonservice.exception.UserRetrievalException;
+import dev.datpl.commonservice.pojo.dto.UserCreationEvent;
 import dev.datpl.commonservice.pojo.request.UserCreationRequest;
 import dev.datpl.commonservice.pojo.response.UserResponse;
 import dev.datpl.commonservice.service.IOauth2Service;
@@ -19,19 +21,23 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class KeycloakService implements IOauth2Service {
     private final Oauth2ConfigProperties oauth2ConfigProperties;
+    private final KafkaTemplate<String, UserCreationEvent> kafkaTemplate;
+
+    private final KafkaConfigProperties kafkaConfigProperties;
 
     private RealmResource getRealmResource() {
         return Keycloak.getInstance(
@@ -78,6 +84,32 @@ public class KeycloakService implements IOauth2Service {
                 UserResource userRes = userResource.get(createdUserId);
                 userRes.joinGroup(targetGroup.getId());
                 assignedGroups.add(groupName);
+            }
+
+            if (!Objects.equals(userRepresentation.getRole(), "admin")) {
+                // not sending user creation event for admin users
+                UserCreationEvent event = UserCreationEvent.builder()
+                        .userId(createdUserId)
+                        .username(userRepresentation.getUsername())
+                        .email(userRepresentation.getEmail())
+                        .firstName(userRepresentation.getFirstName())
+                        .lastName(userRepresentation.getLastName())
+                        .role(userRepresentation.getRole())
+                        .build();
+                try {
+                    kafkaTemplate.send(kafkaConfigProperties.getUserCreationTopic(), event)
+                            .whenComplete((result, ex) -> {
+                                if (ex == null) {
+                                    log.info("User creation event sent successfully for user: {}",
+                                            userRepresentation.getUsername());
+                                } else {
+                                    log.error("Failed to send user creation event", ex);
+                                }
+                            });
+                } catch (Exception eventPublishEx) {
+                    log.error("Error publishing user creation event", eventPublishEx);
+                    // Consider implementing a fallback mechanism or retry logic
+                }
             }
 
             log.info("User created and added to group successfully: {}", user.getUsername());
