@@ -4,7 +4,7 @@ stages:
 default:
   tags:
     - docker
-  image: maven:3.9.3-jdk-17
+  image: maven:3.8.3-openjdk-17
   timeout: 30m
 
 variables:
@@ -43,7 +43,7 @@ variables:
     - changes:
         - "common-service/**/*"
         - "admin-service/**/*"
-      when: neve
+      when: never
 
 .build:
   stage: build
