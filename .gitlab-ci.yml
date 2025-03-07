@@ -19,7 +19,7 @@ variables:
   rules:
     - changes: # only run on main, uat, develop branches
         - "common-service/**/*"
-      if: $CI_COMMIT_BRANCH =~ dev
+      if: $CI_COMMIT_BRANCH =~ /^(main|dev)$/
 
 .training-service:
   variables:
@@ -27,7 +27,7 @@ variables:
   rules:
     - changes:
         - "training-service/**/*"
-      if: $CI_COMMIT_BRANCH =~ dev
+      if: $CI_COMMIT_BRANCH =~ /^(main|dev)$/
     - changes:
         - "common-servic/**/*"
       # only run when common-service changes
@@ -39,7 +39,7 @@ variables:
   rules:
     - changes:
         - "admin-service/**/*"
-      if: $CI_COMMIT_BRANCH =~ dev
+      if: $CI_COMMIT_BRANCH =~ /^(main|dev)$/
     - changes:
         - "common-service/**/*"
         - "admin-service/**/*"
