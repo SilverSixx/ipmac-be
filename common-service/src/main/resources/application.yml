@@ -1,8 +1,24 @@
+# common config for all profiles
+
+server:
+  port: 8000
+
+kafka:
+  topics:
+    - user-creation
+
 spring:
   profiles:
-    active: dev
+    active: local
   main:
     web-application-type: reactive
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
   security:
     oauth2:
       resourceserver:
@@ -21,8 +37,6 @@ spring:
           predicates:
             - Path=/api/admin/**
 
-server:
-  port: 8000
 
 oauth2:
   auth-server-url: http://localhost:8443
@@ -33,13 +47,46 @@ oauth2:
   clients:
     - ipmac-fe
 
-kafka:
-  topics:
-    - user-creation
-
 cors:
   allowed-origins: http://localhost:5173
 
 logging:
   level:
     org.springframework.web: trace
+
+--- 
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  security:
+    oauth2:
+      resourceserver:
+        # point to internal keycloak instance
+        jwt:
+          issuer-uri: http://keycloak:8443/realms/ipmac
+          jwk-set-uri: http://keycloak:8443/realms/ipmac/protocol/openid-connect/certs
+  cloud:
+    gateway:
+      routes:
+        - id: training-service
+          uri: http://training-service:8080
+          predicates:
+            - Path=/api/training/**
+        - id: admin-service
+          uri: http://admin-service:8081
+          predicates:
+            - Path=/api/admin/**
+
+
+oauth2:
+  auth-server-url: http://keycloak:8443
+  realm: ipmac
+  admin-client:
+    client-id: admin-cli
+    client-secret: 855w56kgeLtU8EyGZ4aOqDItwsTUSjeQ
+
+cors:
+  allowed-origins: http://fe:5173
+

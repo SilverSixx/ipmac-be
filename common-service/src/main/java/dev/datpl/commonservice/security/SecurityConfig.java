@@ -1,7 +1,6 @@
 package dev.datpl.commonservice.security;
 
 import dev.datpl.commonservice.config.ConfigProperties;
-import dev.datpl.commonservice.security.filter.RequestIDFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

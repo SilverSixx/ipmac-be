@@ -129,7 +129,7 @@ public class KeycloakService implements IOauth2Service {
         }
     }
 
-    private String extractUserIdFromResponse(Response response) {
+    public String extractUserIdFromResponse(Response response) {
         URI location = response.getLocation();
         if (location != null) {
             String path = location.getPath();
@@ -170,7 +170,6 @@ public class KeycloakService implements IOauth2Service {
                     "Failed to retrieve users from Keycloak"
             );
         }
-
     }
 
     @Override

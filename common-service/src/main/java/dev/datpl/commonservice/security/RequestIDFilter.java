@@ -1,4 +1,4 @@
-package dev.datpl.commonservice.security.filter;
+package dev.datpl.commonservice.security;
 
 import dev.datpl.commonservice.config.Oauth2ConfigProperties;
 import lombok.RequiredArgsConstructor;
