@@ -16,9 +16,11 @@ public class UserService implements IUserService {
 
     @Override
     public void handleUserCreationEvent(User user) {
-        UserRepository repository = userRepositoryFactory.getUserRepository(user.getRole());
-
-        repository.save(user);
-
+        if (user != null) {
+            UserRepository repository = userRepositoryFactory.getUserRepository(user.getRole());
+            if (repository != null) {
+                repository.save(user);
+            }
+        }
     }
 }

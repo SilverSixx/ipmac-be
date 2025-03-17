@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
 
 default:
   tags:
@@ -55,17 +56,43 @@ variables:
     paths:
       - "$MODULE/**/target/*.jar"
 
+.test:
+  stage: test
+  script:
+    - echo "Testing $MODULE"
+    - mvn $MAVEN_CLI_OPTS -pl $MODULE --also-make-dependents test
+  artifacts:
+    expire_in: 30 min
+    paths:
+      - "$MODULE/**/target/surefire-reports/*.xml"
+      - "$MODULE/**/target/site/jacoco/index.html"
+
 build-common-service:
   extends:
     - .common-service
     - .build
+
+test-common-service:
+  extends:
+    - .common-service
+    - .test
 
 build-training-service:
   extends:
     - .training-service
     - .build
 
+test-training-service:
+  extends:
+    - .training-service
+    - .test
+
 build-admin-service:
   extends:
     - .admin-service
     - .build
+
+test-admin-service:
+  extends:
+    - .admin-service
+    - .test

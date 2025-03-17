@@ -12,8 +12,8 @@ RUN $JAVA_HOME/bin/jlink \
     --compress=2 \
     --output /opt/jlinked
 
+# this stage should produce a runtime image
 FROM alpine:latest
-
 COPY --from=build /opt/jlinked /opt/jlinked
 
 ENV JAVA_HOME=/opt/jlinked

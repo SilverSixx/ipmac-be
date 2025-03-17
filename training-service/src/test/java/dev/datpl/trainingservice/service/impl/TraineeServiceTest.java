@@ -10,12 +10,11 @@ import dev.datpl.trainingservice.repository.TraineeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,8 +36,7 @@ class TraineeServiceTest {
 
     @BeforeEach
     void setUp() {
-        traineeServiceUnderTest = new TraineeService(mockTraineeRepository, mockPartnerRepository,
-                mockCourseRepository);
+        traineeServiceUnderTest = new TraineeService(mockTraineeRepository, mockPartnerRepository, mockCourseRepository);
     }
 
     @Test
@@ -55,11 +53,11 @@ class TraineeServiceTest {
                 .build());
         when(mockTraineeRepository.findByUserId("traineeId")).thenReturn(trainee);
 
-        // Configure PartnerRepository.findByUserId(...).
+        // Configure PartnerRepository.findByUserId(...). List is immutable, so we need to create a new ArrayList
         final Optional<Partner> partner = Optional.of(Partner.builder()
-                .trainees(List.of(Trainee.builder()
+                .trainees(new ArrayList<>(List.of(Trainee.builder() // Initialize with mutable ArrayList
                         .courses(List.of(Course.builder().build()))
-                        .build()))
+                        .build())))
                 .build());
         when(mockPartnerRepository.findByUserId("partnerId")).thenReturn(partner);
 
@@ -107,9 +105,11 @@ class TraineeServiceTest {
         // Setup
         // Configure TraineeRepository.findByUserId(...).
         final Optional<Trainee> trainee = Optional.of(Trainee.builder()
-                .courses(List.of(Course.builder()
+                .userId(String.valueOf(UUID.randomUUID())) // Set an ID
+                .courses(new ArrayList<>(List.of(Course.builder()
+                        .id(10L) // Set an ID
                         .trainees(List.of())
-                        .build()))
+                        .build())))
                 .partner(Partner.builder()
                         .trainees(List.of())
                         .build())
@@ -118,10 +118,12 @@ class TraineeServiceTest {
 
         // Configure CourseRepository.findById(...).
         final Optional<Course> course = Optional.of(Course.builder()
-                .trainees(List.of(Trainee.builder()
+                .id(10L) // Set an ID
+                .trainees(new ArrayList<>(List.of(Trainee.builder()
+                        .userId(String.valueOf(UUID.randomUUID())) // Set an ID
                         .courses(List.of())
                         .partner(Partner.builder().build())
-                        .build()))
+                        .build())))
                 .build());
         when(mockCourseRepository.findById("courseId")).thenReturn(course);
 
@@ -130,12 +132,11 @@ class TraineeServiceTest {
 
         // Verify the results
         verify(mockTraineeRepository).save(any(User.class));
-        verify(mockCourseRepository).save(Course.builder()
-                .trainees(List.of(Trainee.builder()
-                        .courses(List.of())
-                        .partner(Partner.builder().build())
-                        .build()))
-                .build());
+
+        ArgumentCaptor<Course> courseCaptor = ArgumentCaptor.forClass(Course.class);
+        verify(mockCourseRepository).save(courseCaptor.capture());
+        Course savedCourse = courseCaptor.getValue();
+        assert savedCourse.getTrainees().contains(trainee.get());
     }
 
     @Test

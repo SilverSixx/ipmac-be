@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Data
@@ -49,4 +50,18 @@ public class Course {
     )
     @JsonIgnoreProperties("courses")
     List<Trainee> trainees;
+
+    // Assuming you have an 'id' field
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId()); // Replace 'getId()' with your actual getter
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Course course = (Course) obj;
+        return Objects.equals(getId(), course.getId()); // Replace 'getId()' with your actual getter
+    }
 }

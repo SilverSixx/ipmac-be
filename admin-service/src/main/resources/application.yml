@@ -1,19 +1,42 @@
+server:
+  port: 8081
+
+kafka:
+  group-id: admin-service
+  topics:
+    - user-creation
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update # For development; consider 'validate' or migrations for production
+
+---
 spring:
   profiles:
-    active: dev
+    active: local
   datasource:
     url: jdbc:postgresql://localhost:54321/postgres
     username: postgres
     password: password
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update # For development; consider 'validate' or migrations for production
     show-sql: true
-
-server:
-  port: 8081
 
 cors:
   allowed-origins:
     - "http://localhost:8000"
+
+---
+
+spring:
+  profiles:
+    active: dev
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/postgres
+    username: postgres
+    password: password
+
+cors:
+  allowed-origins:
+    - "http://common-service:8000"
