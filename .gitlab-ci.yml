@@ -12,7 +12,7 @@ variables:
   GIT_STRATEGY: clone
   GIT_DEPTH: 0
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime -Djava.awt.headless"
-  MAVEN_CLI_OPTS: "--no-transfer-progress --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd -DdeployAtEnd -DretryFailedDeploymentCount=2 -DskipTests -s ci_settings.xml --update-snapshots"
+  MAVEN_CLI_OPTS: "--no-transfer-progress --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd -DdeployAtEnd -DretryFailedDeploymentCount=2 -DskipTests --update-snapshots" # -s ci_settings.xml
 
 .common-service:
   variables:
