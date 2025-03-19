@@ -83,3 +83,14 @@ public class KeycloakUserConsumer {
     }
 }
 ```
+
+## Apply Unit Testing 
+
+Using Jacoco plugin to generate code coverage reports for each service.
+And using test stage in GitLab CI to run unit tests and generate coverage reports.
+
+- **Common Service**: `mvn clean test -pl common-service`
+- ![img.png](common-service-coverage.png)
+
+- **Training Service**: `mvn clean test -pl training-service`
+- ![img_1.png](training-service-coverage.png)
