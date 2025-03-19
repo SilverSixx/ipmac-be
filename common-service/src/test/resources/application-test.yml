@@ -29,12 +29,8 @@ oauth2:
     client-id: admin-cli
     client-secret: 855w56kgeLtU8EyGZ4aOqDItwsTUSjeQ
   clients:
-    - ipmac-fe
+    - test
 
 cors:
   allowed-origins: http://localhost:5173
-
-logging:
-  level:
-    org.springframework.web: trace
 

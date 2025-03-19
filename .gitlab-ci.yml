@@ -1,6 +1,9 @@
 stages:
   - build
   - test
+  - sast
+  - deploy
+  - cleanup
 
 default:
   tags:
@@ -8,11 +11,15 @@ default:
   image: maven:3.8.3-openjdk-17
   timeout: 30m
 
+cache:
+  paths:
+    - .m2/repository
+
 variables:
   GIT_STRATEGY: clone
   GIT_DEPTH: 0
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime -Djava.awt.headless"
-  MAVEN_CLI_OPTS: "--no-transfer-progress --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd -DdeployAtEnd -DretryFailedDeploymentCount=2 -DskipTests --update-snapshots" # -s ci_settings.xml
+  MAVEN_CLI_OPTS: "--no-transfer-progress --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd -DdeployAtEnd -DretryFailedDeploymentCount=2 -DskipTests -s ci_settings.xml --update-snapshots"
 
 .common-service:
   variables:
@@ -60,7 +67,7 @@ variables:
   stage: test
   script:
     - echo "Testing $MODULE"
-    - mvn $MAVEN_CLI_OPTS -pl $MODULE --also-make-dependents test
+    - mvn -pl $MODULE test
   artifacts:
     expire_in: 30 min
     paths:
