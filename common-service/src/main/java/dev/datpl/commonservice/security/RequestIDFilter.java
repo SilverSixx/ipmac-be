@@ -17,6 +17,11 @@ public class RequestIDFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+
+        if (exchange.getRequest().getPath().toString().contains("/api/common/health")) {
+            return chain.filter(exchange);
+        }
+
         return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst("X-Requested-With"))
                 .filter(requestId -> oauth2ConfigProperties.getClients().contains(requestId))
                 .flatMap(valid -> chain.filter(exchange))
